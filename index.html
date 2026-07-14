@@ -89,6 +89,92 @@
       color: #555;
     }
 
+    .admin-panel {
+      display: none;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .admin-panel h2 {
+      margin-top: 0;
+      color: #f57c00;
+      font-size: 22px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #444;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .form-group textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: #ffb74d;
+      box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.2);
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .submit-btn,
+    .cancel-btn {
+      border: none;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      background: #f57c00;
+      color: #fff;
+    }
+
+    .submit-btn:hover {
+      background: #ef6c00;
+    }
+
+    .cancel-btn {
+      background: #eeeeee;
+      color: #555;
+      display: none;
+    }
+
+    .cancel-btn:hover {
+      background: #dddddd;
+    }
+
     .post-list {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -146,6 +232,32 @@
       white-space: pre-line;
     }
 
+    .post-actions {
+      display: none;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+      border: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .delete-btn {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+
     .empty-message {
       background: #fff;
       border-radius: 20px;
@@ -192,7 +304,8 @@
         grid-template-columns: 1fr;
       }
 
-      .intro {
+      .intro,
+      .admin-panel {
         padding: 20px;
       }
     }
@@ -218,61 +331,46 @@
       </p>
     </section>
 
-    <section class="post-list" id="postList">
-      <!-- 예시 게시물 1 -->
-      <article class="post-card">
-        <div class="media-box">
-          <img
-            src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80"
-            alt="아이 성장 기록 사진"
-          />
-        </div>
-        <div class="post-content">
-          <div class="post-date">2026년 7월 14일</div>
-          <h3 class="post-title">처음으로 놀이터에서 신나게 논 날</h3>
-          <p class="post-text">
-오늘은 아이들이 놀이터에서 정말 즐거운 시간을 보냈습니다.
-미끄럼틀도 타고, 그네도 타면서 많이 웃었습니다.
-          </p>
-        </div>
-      </article>
+    <section class="admin-panel" id="adminPanel">
+      <h2 id="formTitle">새 성장 기록 등록</h2>
 
-      <!-- 예시 게시물 2 -->
-      <article class="post-card">
-        <div class="media-box">
-          <img
-            src="https://images.unsplash.com/photo-1546015720-b8b30df5aa27?auto=format&fit=crop&w=900&q=80"
-            alt="아이 성장 기록 사진"
-          />
+      <form id="postForm">
+        <div class="form-group">
+          <label for="postTitle">제목</label>
+          <input type="text" id="postTitle" placeholder="예: 처음으로 놀이터에서 신나게 논 날" required />
         </div>
-        <div class="post-content">
-          <div class="post-date">2026년 7월 10일</div>
-          <h3 class="post-title">즐거운 산책 시간</h3>
-          <p class="post-text">
-날씨가 좋아서 함께 산책을 다녀왔습니다.
-작은 꽃을 발견하고 한참을 바라보는 모습이 참 사랑스러웠습니다.
-          </p>
-        </div>
-      </article>
 
-      <!-- 예시 게시물 3 -->
-      <article class="post-card">
-        <div class="media-box">
-          <img
-            src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80"
-            alt="아이 성장 기록 사진"
-          />
+        <div class="form-group">
+          <label for="postDate">날짜</label>
+          <input type="date" id="postDate" required />
         </div>
-        <div class="post-content">
-          <div class="post-date">2026년 7월 5일</div>
-          <h3 class="post-title">함께 책을 읽은 밤</h3>
-          <p class="post-text">
-잠들기 전 함께 동화책을 읽었습니다.
-좋아하는 장면이 나올 때마다 환하게 웃는 모습이 기억에 남습니다.
-          </p>
+
+        <div class="form-group">
+          <label for="mediaType">미디어 종류</label>
+          <select id="mediaType">
+            <option value="image">사진</option>
+            <option value="video">동영상</option>
+          </select>
         </div>
-      </article>
+
+        <div class="form-group">
+          <label for="mediaUrl">사진 또는 동영상 주소</label>
+          <input type="url" id="mediaUrl" placeholder="https://..." required />
+        </div>
+
+        <div class="form-group">
+          <label for="postText">내용</label>
+          <textarea id="postText" placeholder="아이의 소중한 순간을 기록해 주세요." required></textarea>
+        </div>
+
+        <div class="form-buttons">
+          <button type="submit" class="submit-btn" id="submitBtn">게시물 등록</button>
+          <button type="button" class="cancel-btn" id="cancelEditBtn">수정 취소</button>
+        </div>
+      </form>
     </section>
+
+    <section class="post-list" id="postList"></section>
 
     <section class="empty-message" id="emptyMessage">
       아직 등록된 성장 기록이 없습니다.
@@ -284,95 +382,192 @@
   </footer>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-  apiKey: "AIzaSyBYsG65VL3DVkMBJz4DNtLopqjDwxuAh1M",
-  authDomain: "tjtest-5da4d.firebaseapp.com",
-  projectId: "tjtest-5da4d",
-  storageBucket: "tjtest-5da4d.firebasestorage.app",
-  messagingSenderId: "429460055420",
-  appId: "1:429460055420:web:2829279f9a03a264e1f0f9",
-  measurementId: "G-67EMJSLT73"
-};
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYsG65VL3DVkMBJz4DNtLopqjDwxuAh1M",
+      authDomain: "tjtest-5da4d.firebaseapp.com",
+      projectId: "tjtest-5da4d",
+      storageBucket: "tjtest-5da4d.firebasestorage.app",
+      messagingSenderId: "429460055420",
+      appId: "1:429460055420:web:2829279f9a03a264e1f0f9",
+      measurementId: "G-67EMJSLT73"
+    };
 
-  const ADMIN_EMAIL = "flyingrs50@gmail.com";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-  const postList = document.getElementById("postList");
-  const emptyMessage = document.getElementById("emptyMessage");
-  const adminLoginBtn = document.getElementById("adminLoginBtn");
+    const ADMIN_EMAIL = "flyingrs50@gmail.com";
 
-  let isAdmin = false;
+    const postList = document.getElementById("postList");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const adminLoginBtn = document.getElementById("adminLoginBtn");
+    const adminPanel = document.getElementById("adminPanel");
 
-  function checkEmptyPosts() {
-    const posts = postList.querySelectorAll(".post-card");
+    const postForm = document.getElementById("postForm");
+    const postTitle = document.getElementById("postTitle");
+    const postDate = document.getElementById("postDate");
+    const mediaType = document.getElementById("mediaType");
+    const mediaUrl = document.getElementById("mediaUrl");
+    const postText = document.getElementById("postText");
 
-    if (posts.length === 0) {
-      emptyMessage.style.display = "block";
-    } else {
-      emptyMessage.style.display = "none";
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+    let isAdmin = false;
+    let editingPostId = null;
+    let allPosts = [];
+
+    function formatDate(dateString) {
+      if (!dateString) return "";
+
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+
+      return `${year}년 ${month}월 ${day}일`;
     }
-  }
 
-  async function loginWithGoogle() {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      if (user.email === ADMIN_EMAIL) {
-        alert("관리자 로그인 성공: " + user.email);
+    function checkEmptyPosts() {
+      if (allPosts.length === 0) {
+        emptyMessage.style.display = "block";
       } else {
-        alert("관리자 계정이 아닙니다. 접근할 수 없습니다.");
-        await signOut(auth);
+        emptyMessage.style.display = "none";
       }
-    } catch (error) {
-      console.error(error);
-      alert("로그인 중 오류가 발생했습니다.");
     }
-  }
 
-  async function logoutAdmin() {
-    try {
-      await signOut(auth);
-      alert("로그아웃되었습니다.");
-    } catch (error) {
-      console.error(error);
-      alert("로그아웃 중 오류가 발생했습니다.");
+    function resetForm() {
+      postForm.reset();
+      editingPostId = null;
+      formTitle.textContent = "새 성장 기록 등록";
+      submitBtn.textContent = "게시물 등록";
+      cancelEditBtn.style.display = "none";
     }
-  }
 
-  adminLoginBtn.addEventListener("click", async function () {
-    if (isAdmin) {
-      await logoutAdmin();
-    } else {
-      await loginWithGoogle();
+    function renderPosts() {
+      postList.innerHTML = "";
+
+      allPosts.forEach((post) => {
+        const article = document.createElement("article");
+        article.className = "post-card";
+
+        const mediaHtml = post.mediaType === "video"
+          ? `
+            <video controls>
+              <source src="${post.mediaUrl}" />
+              브라우저가 동영상을 지원하지 않습니다.
+            </video>
+          `
+          : `
+            <img src="${post.mediaUrl}" alt="아이 성장 기록 사진" />
+          `;
+
+        article.innerHTML = `
+          <div class="media-box">
+            ${mediaHtml}
+          </div>
+
+          <div class="post-content">
+            <div class="post-date">${formatDate(post.date)}</div>
+            <h3 class="post-title">${post.title}</h3>
+            <p class="post-text">${post.text}</p>
+
+            <div class="post-actions" style="display: ${isAdmin ? "flex" : "none"};">
+              <button class="edit-btn" data-id="${post.id}">수정</button>
+              <button class="delete-btn" data-id="${post.id}">삭제</button>
+            </div>
+          </div>
+        `;
+
+        postList.appendChild(article);
+      });
+
+      checkEmptyPosts();
     }
-  });
 
-  onAuthStateChanged(auth, function (user) {
-    if (user && user.email === ADMIN_EMAIL) {
-      isAdmin = true;
-      adminLoginBtn.textContent = "관리자 로그아웃";
-    } else {
-      isAdmin = false;
-      adminLoginBtn.textContent = "관리자 로그인";
+    async function loginWithGoogle() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        if (user.email === ADMIN_EMAIL) {
+          alert("관리자 로그인 성공: " + user.email);
+        } else {
+          alert("관리자 계정이 아닙니다. 접근할 수 없습니다.");
+          await signOut(auth);
+        }
+      } catch (error) {
+        console.error(error);
+        alert("로그인 중 오류가 발생했습니다.");
+      }
     }
-  });
 
-  checkEmptyPosts();
-</script>
+    async function logoutAdmin() {
+      try {
+        await signOut(auth);
+        alert("로그아웃되었습니다.");
+      } catch (error) {
+        console.error(error);
+        alert("로그아웃 중 오류가 발생했습니다.");
+      }
+    }
 
-</body>
-</html>
+    adminLoginBtn.addEventListener("click", async function () {
+      if (isAdmin) {
+        await logoutAdmin();
+      } else {
+        await loginWithGoogle();
+      }
+    });
+
+    onAuthStateChanged(auth, function (user) {
+      if (user && user.email === ADMIN_EMAIL) {
+        isAdmin = true;
+        adminLoginBtn.textContent = "관리자 로그아웃";
+        adminPanel.style.display = "block";
+      } else {
+        isAdmin = false;
+        adminLoginBtn.textContent = "관리자 로그인";
+        adminPanel.style.display = "none";
+        resetForm();
+      }
+
+      renderPosts();
+    });
+
+    postForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      if (!isAdmin) {
+        alert("관리자만 게시물을 등록하거나 수정할 수 있습니다.");
+        return;
+      }
+
+      const postData = {
+        title: postTitle.value.trim(),
+  
