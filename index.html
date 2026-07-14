@@ -23,6 +23,32 @@
       color: #fff;
       padding: 48px 20px 40px;
       text-align: center;
+      position: relative;
+    }
+
+    .admin-login-area {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+    }
+
+    .admin-login-btn {
+      border: none;
+      background: rgba(255, 255, 255, 0.95);
+      color: #f57c00;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .admin-login-btn:hover {
+      transform: translateY(-2px);
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
     }
 
     header h1 {
@@ -121,4 +147,162 @@
     }
 
     .empty-message {
-      backgrou
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      color: #777;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 16px;
+      color: #999;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .post-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 70px 16px 32px;
+      }
+
+      .admin-login-area {
+        top: 16px;
+        right: 16px;
+      }
+
+      .admin-login-btn {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      header h1 {
+        font-size: 26px;
+      }
+
+      .post-list {
+        grid-template-columns: 1fr;
+      }
+
+      .intro {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="admin-login-area">
+      <button class="admin-login-btn" id="adminLoginBtn">관리자 로그인</button>
+    </div>
+
+    <h1>아이들의 성장일기</h1>
+    <p>소중한 순간들을 사진과 이야기로 기록합니다</p>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <h2>우리 아이들의 하루하루</h2>
+      <p>
+        이곳은 아이들이 자라나는 소중한 순간들을 모아두는 공간입니다.
+        가족과 지인들이 언제든 편하게 추억을 함께 볼 수 있습니다.
+      </p>
+    </section>
+
+    <section class="post-list" id="postList">
+      <!-- 예시 게시물 1 -->
+      <article class="post-card">
+        <div class="media-box">
+          <img
+            src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80"
+            alt="아이 성장 기록 사진"
+          />
+        </div>
+        <div class="post-content">
+          <div class="post-date">2026년 7월 14일</div>
+          <h3 class="post-title">처음으로 놀이터에서 신나게 논 날</h3>
+          <p class="post-text">
+오늘은 아이들이 놀이터에서 정말 즐거운 시간을 보냈습니다.
+미끄럼틀도 타고, 그네도 타면서 많이 웃었습니다.
+          </p>
+        </div>
+      </article>
+
+      <!-- 예시 게시물 2 -->
+      <article class="post-card">
+        <div class="media-box">
+          <img
+            src="https://images.unsplash.com/photo-1546015720-b8b30df5aa27?auto=format&fit=crop&w=900&q=80"
+            alt="아이 성장 기록 사진"
+          />
+        </div>
+        <div class="post-content">
+          <div class="post-date">2026년 7월 10일</div>
+          <h3 class="post-title">즐거운 산책 시간</h3>
+          <p class="post-text">
+날씨가 좋아서 함께 산책을 다녀왔습니다.
+작은 꽃을 발견하고 한참을 바라보는 모습이 참 사랑스러웠습니다.
+          </p>
+        </div>
+      </article>
+
+      <!-- 예시 게시물 3 -->
+      <article class="post-card">
+        <div class="media-box">
+          <img
+            src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80"
+            alt="아이 성장 기록 사진"
+          />
+        </div>
+        <div class="post-content">
+          <div class="post-date">2026년 7월 5일</div>
+          <h3 class="post-title">함께 책을 읽은 밤</h3>
+          <p class="post-text">
+잠들기 전 함께 동화책을 읽었습니다.
+좋아하는 장면이 나올 때마다 환하게 웃는 모습이 기억에 남습니다.
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <section class="empty-message" id="emptyMessage">
+      아직 등록된 성장 기록이 없습니다.
+    </section>
+  </main>
+
+  <footer>
+    © 2026 아이들의 성장일기. All rights reserved.
+  </footer>
+
+  <script>
+    const postList = document.getElementById("postList");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const adminLoginBtn = document.getElementById("adminLoginBtn");
+
+    function checkEmptyPosts() {
+      const posts = postList.querySelectorAll(".post-card");
+
+      if (posts.length === 0) {
+        emptyMessage.style.display = "block";
+      } else {
+        emptyMessage.style.display = "none";
+      }
+    }
+
+    adminLoginBtn.addEventListener("click", function () {
+      alert("관리자 로그인 기능은 다음 단계에서 Firebase로 연결합니다.");
+    });
+
+    checkEmptyPosts();
+  </script>
+</body>
+</html>
