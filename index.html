@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>아이들의 성장일기</title>
+  <title>남지우 남우주의 성장일기</title>
 
   <style>
     * {
@@ -125,6 +125,7 @@
       font-size: 15px;
       font-family: inherit;
       outline: none;
+      background: #fff;
     }
 
     .form-group textarea {
@@ -137,6 +138,40 @@
     .form-group select:focus {
       border-color: #ffb74d;
       box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.2);
+    }
+
+    .upload-help {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .current-media-info {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff7e6;
+      color: #8a5a00;
+      font-size: 13px;
+    }
+
+    .preview-box {
+      display: none;
+      margin-top: 12px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f3f3f3;
+      max-width: 360px;
+      aspect-ratio: 4 / 3;
+    }
+
+    .preview-box img,
+    .preview-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .form-buttons {
@@ -163,6 +198,11 @@
 
     .submit-btn:hover {
       background: #ef6c00;
+    }
+
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
 
     .cancel-btn {
@@ -346,16 +386,17 @@
         </div>
 
         <div class="form-group">
-          <label for="mediaType">미디어 종류</label>
-          <select id="mediaType">
-            <option value="image">사진</option>
-            <option value="video">동영상</option>
-          </select>
-        </div>
+          <label for="mediaFile">사진 또는 동영상 업로드</label>
+          <input type="file" id="mediaFile" accept="image/*,video/*" />
+          <div class="upload-help">
+            사진 또는 동영상 파일을 선택해 주세요. 게시물 수정 시 새 파일을 선택하지 않으면 기존 파일이 유지됩니다.
+          </div>
 
-        <div class="form-group">
-          <label for="mediaUrl">사진 또는 동영상 주소</label>
-          <input type="url" id="mediaUrl" placeholder="https://..." required />
+          <div class="current-media-info" id="currentMediaInfo">
+            현재 등록된 파일이 있습니다. 새 파일을 선택하면 기존 파일이 교체됩니다.
+          </div>
+
+          <div class="preview-box" id="previewBox"></div>
         </div>
 
         <div class="form-group">
@@ -405,6 +446,14 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBYsG65VL3DVkMBJz4DNtLopqjDwxuAh1M",
       authDomain: "tjtest-5da4d.firebaseapp.com",
@@ -418,6 +467,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
 
     const ADMIN_EMAIL = "flyingrs50@gmail.com";
@@ -430,22 +480,37 @@
     const postForm = document.getElementById("postForm");
     const postTitle = document.getElementById("postTitle");
     const postDate = document.getElementById("postDate");
-    const mediaType = document.getElementById("mediaType");
-    const mediaUrl = document.getElementById("mediaUrl");
+    const mediaFile = document.getElementById("mediaFile");
     const postText = document.getElementById("postText");
 
     const formTitle = document.getElementById("formTitle");
     const submitBtn = document.getElementById("submitBtn");
     const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const previewBox = document.getElementById("previewBox");
+    const currentMediaInfo = document.getElementById("currentMediaInfo");
 
     let isAdmin = false;
     let editingPostId = null;
+    let editingOldMediaPath = null;
+    let editingOldMediaUrl = null;
+    let editingOldMediaType = null;
     let allPosts = [];
+
+    function escapeHtml(value) {
+      if (!value) return "";
+
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
     function formatDate(dateString) {
       if (!dateString) return "";
 
-      const date = new Date(dateString);
+      const date = new Date(dateString + "T00:00:00");
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
@@ -461,12 +526,96 @@
       }
     }
 
+    function getMediaTypeFromFile(file) {
+      if (!file) return null;
+
+      if (file.type.startsWith("image/")) {
+        return "image";
+      }
+
+      if (file.type.startsWith("video/")) {
+        return "video";
+      }
+
+      return null;
+    }
+
+    function makeSafeFileName(fileName) {
+      return fileName.replace(/[^\w가-힣ㄱ-ㅎㅏ-ㅣ.\-]/g, "_");
+    }
+
+    async function uploadMediaFile(file) {
+      const mediaType = getMediaTypeFromFile(file);
+
+      if (!mediaType) {
+        throw new Error("사진 또는 동영상 파일만 업로드할 수 있습니다.");
+      }
+
+      const safeFileName = makeSafeFileName(file.name);
+      const filePath = `posts/${Date.now()}_${safeFileName}`;
+      const fileRef = ref(storage, filePath);
+
+      await uploadBytes(fileRef, file);
+
+      const downloadUrl = await getDownloadURL(fileRef);
+
+      return {
+        mediaUrl: downloadUrl,
+        mediaPath: filePath,
+        mediaType: mediaType
+      };
+    }
+
+    async function deleteMediaFile(mediaPath) {
+      if (!mediaPath) return;
+
+      try {
+        const fileRef = ref(storage, mediaPath);
+        await deleteObject(fileRef);
+      } catch (error) {
+        console.warn("Storage 파일 삭제 실패 또는 이미 삭제됨:", error);
+      }
+    }
+
     function resetForm() {
       postForm.reset();
       editingPostId = null;
+      editingOldMediaPath = null;
+      editingOldMediaUrl = null;
+      editingOldMediaType = null;
+
       formTitle.textContent = "새 성장 기록 등록";
       submitBtn.textContent = "게시물 등록";
       cancelEditBtn.style.display = "none";
+
+      currentMediaInfo.style.display = "none";
+      previewBox.style.display = "none";
+      previewBox.innerHTML = "";
+    }
+
+    function showFilePreview(file) {
+      previewBox.innerHTML = "";
+
+      if (!file) {
+        previewBox.style.display = "none";
+        return;
+      }
+
+      const mediaType = getMediaTypeFromFile(file);
+      const objectUrl = URL.createObjectURL(file);
+
+      if (mediaType === "image") {
+        previewBox.innerHTML = `<img src="${objectUrl}" alt="업로드 미리보기" />`;
+      } else if (mediaType === "video") {
+        previewBox.innerHTML = `<video src="${objectUrl}" controls></video>`;
+      } else {
+        alert("사진 또는 동영상 파일만 선택해 주세요.");
+        mediaFile.value = "";
+        previewBox.style.display = "none";
+        return;
+      }
+
+      previewBox.style.display = "block";
     }
 
     function renderPosts() {
@@ -475,6 +624,9 @@
       allPosts.forEach((post) => {
         const article = document.createElement("article");
         article.className = "post-card";
+
+        const safeTitle = escapeHtml(post.title);
+        const safeText = escapeHtml(post.text);
 
         const mediaHtml = post.mediaType === "video"
           ? `
@@ -494,8 +646,8 @@
 
           <div class="post-content">
             <div class="post-date">${formatDate(post.date)}</div>
-            <h3 class="post-title">${post.title}</h3>
-            <p class="post-text">${post.text}</p>
+            <h3 class="post-title">${safeTitle}</h3>
+            <p class="post-text">${safeText}</p>
 
             <div class="post-actions" style="display: ${isAdmin ? "flex" : "none"};">
               <button class="edit-btn" data-id="${post.id}">수정</button>
@@ -560,6 +712,11 @@
       renderPosts();
     });
 
+    mediaFile.addEventListener("change", function () {
+      const file = mediaFile.files[0];
+      showFilePreview(file);
+    });
+
     postForm.addEventListener("submit", async function (event) {
       event.preventDefault();
 
@@ -568,6 +725,155 @@
         return;
       }
 
-      const postData = {
-        title: postTitle.value.trim(),
-  
+      const selectedFile = mediaFile.files[0];
+
+      if (!editingPostId && !selectedFile) {
+        alert("게시물 등록 시 사진 또는 동영상 파일을 선택해 주세요.");
+        return;
+      }
+
+      const title = postTitle.value.trim();
+      const date = postDate.value;
+      const text = postText.value.trim();
+
+      if (!title || !date || !text) {
+        alert("제목, 날짜, 내용을 모두 입력해 주세요.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = editingPostId ? "수정 중..." : "업로드 중...";
+
+      try {
+        let mediaData = {
+          mediaUrl: editingOldMediaUrl,
+          mediaPath: editingOldMediaPath,
+          mediaType: editingOldMediaType
+        };
+
+        if (selectedFile) {
+          mediaData = await uploadMediaFile(selectedFile);
+
+          if (editingPostId && editingOldMediaPath) {
+            await deleteMediaFile(editingOldMediaPath);
+          }
+        }
+
+        const postData = {
+          title: title,
+          date: date,
+          text: text,
+          mediaUrl: mediaData.mediaUrl,
+          mediaPath: mediaData.mediaPath,
+          mediaType: mediaData.mediaType,
+          updatedAt: serverTimestamp()
+        };
+
+        if (editingPostId) {
+          const postRef = doc(db, "posts", editingPostId);
+          await updateDoc(postRef, postData);
+          alert("게시물이 수정되었습니다.");
+        } else {
+          await addDoc(collection(db, "posts"), {
+            ...postData,
+            createdAt: serverTimestamp()
+          });
+          alert("게시물이 등록되었습니다.");
+        }
+
+        resetForm();
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "게시물 저장 중 오류가 발생했습니다.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = editingPostId ? "게시물 수정" : "게시물 등록";
+      }
+    });
+
+    cancelEditBtn.addEventListener("click", function () {
+      resetForm();
+    });
+
+    postList.addEventListener("click", async function (event) {
+      const target = event.target;
+      const postId = target.dataset.id;
+
+      if (!postId) return;
+
+      if (!isAdmin) {
+        alert("관리자만 사용할 수 있습니다.");
+        return;
+      }
+
+      if (target.classList.contains("edit-btn")) {
+        const post = allPosts.find((item) => item.id === postId);
+
+        if (!post) return;
+
+        editingPostId = post.id;
+        editingOldMediaPath = post.mediaPath || null;
+        editingOldMediaUrl = post.mediaUrl || null;
+        editingOldMediaType = post.mediaType || null;
+
+        postTitle.value = post.title;
+        postDate.value = post.date;
+        postText.value = post.text;
+        mediaFile.value = "";
+
+        formTitle.textContent = "성장 기록 수정";
+        submitBtn.textContent = "게시물 수정";
+        cancelEditBtn.style.display = "inline-block";
+        currentMediaInfo.style.display = "block";
+
+        previewBox.innerHTML = post.mediaType === "video"
+          ? `<video src="${post.mediaUrl}" controls></video>`
+          : `<img src="${post.mediaUrl}" alt="현재 등록된 사진" />`;
+
+        previewBox.style.display = "block";
+
+        window.scrollTo({
+          top: adminPanel.offsetTop - 20,
+          behavior: "smooth"
+        });
+      }
+
+      if (target.classList.contains("delete-btn")) {
+        const post = allPosts.find((item) => item.id === postId);
+
+        if (!post) return;
+
+        const confirmed = confirm("정말 이 게시물을 삭제하시겠습니까?");
+
+        if (!confirmed) return;
+
+        try {
+          await deleteDoc(doc(db, "posts", postId));
+
+          if (post.mediaPath) {
+            await deleteMediaFile(post.mediaPath);
+          }
+
+          alert("게시물이 삭제되었습니다.");
+        } catch (error) {
+          console.error(error);
+          alert("게시물 삭제 중 오류가 발생했습니다.");
+        }
+      }
+    });
+
+    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+
+    onSnapshot(postsQuery, function (snapshot) {
+      allPosts = snapshot.docs.map((docItem) => {
+        return {
+          id: docItem.id,
+          ...docItem.data()
+        };
+      });
+
+      renderPosts();
+    });
+  </script>
+</body>
+</html>
