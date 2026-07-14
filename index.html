@@ -283,26 +283,96 @@
     © 2026 아이들의 성장일기. All rights reserved.
   </footer>
 
-  <script>
-    const postList = document.getElementById("postList");
-    const emptyMessage = document.getElementById("emptyMessage");
-    const adminLoginBtn = document.getElementById("adminLoginBtn");
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-    function checkEmptyPosts() {
-      const posts = postList.querySelectorAll(".post-card");
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-      if (posts.length === 0) {
-        emptyMessage.style.display = "block";
-      } else {
-        emptyMessage.style.display = "none";
-      }
+  const firebaseConfig = {
+  apiKey: "AIzaSyBYsG65VL3DVkMBJz4DNtLopqjDwxuAh1M",
+  authDomain: "tjtest-5da4d.firebaseapp.com",
+  projectId: "tjtest-5da4d",
+  storageBucket: "tjtest-5da4d.firebasestorage.app",
+  messagingSenderId: "429460055420",
+  appId: "1:429460055420:web:2829279f9a03a264e1f0f9",
+  measurementId: "G-67EMJSLT73"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const ADMIN_EMAIL = "flyingrs50@gmail.com";
+
+  const postList = document.getElementById("postList");
+  const emptyMessage = document.getElementById("emptyMessage");
+  const adminLoginBtn = document.getElementById("adminLoginBtn");
+
+  let isAdmin = false;
+
+  function checkEmptyPosts() {
+    const posts = postList.querySelectorAll(".post-card");
+
+    if (posts.length === 0) {
+      emptyMessage.style.display = "block";
+    } else {
+      emptyMessage.style.display = "none";
     }
+  }
 
-    adminLoginBtn.addEventListener("click", function () {
-      alert("관리자 로그인 기능은 다음 단계에서 Firebase로 연결합니다.");
-    });
+  async function loginWithGoogle() {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-    checkEmptyPosts();
-  </script>
+      if (user.email === ADMIN_EMAIL) {
+        alert("관리자 로그인 성공: " + user.email);
+      } else {
+        alert("관리자 계정이 아닙니다. 접근할 수 없습니다.");
+        await signOut(auth);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function logoutAdmin() {
+    try {
+      await signOut(auth);
+      alert("로그아웃되었습니다.");
+    } catch (error) {
+      console.error(error);
+      alert("로그아웃 중 오류가 발생했습니다.");
+    }
+  }
+
+  adminLoginBtn.addEventListener("click", async function () {
+    if (isAdmin) {
+      await logoutAdmin();
+    } else {
+      await loginWithGoogle();
+    }
+  });
+
+  onAuthStateChanged(auth, function (user) {
+    if (user && user.email === ADMIN_EMAIL) {
+      isAdmin = true;
+      adminLoginBtn.textContent = "관리자 로그아웃";
+    } else {
+      isAdmin = false;
+      adminLoginBtn.textContent = "관리자 로그인";
+    }
+  });
+
+  checkEmptyPosts();
+</script>
+
 </body>
 </html>
